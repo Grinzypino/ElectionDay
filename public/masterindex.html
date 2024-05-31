@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    select, button {
+      font-size: 16px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    #confirmButton {
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    #startButton {
+      background-color: #28a745;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .confirm-message {
+      margin-bottom: 20px;
+    }
+    #acLabel, #acSelect, #cnfbtn, #strbtn, #startButton , #confirmButton, #psLabel, #psSelect, #snoLabel, #snoSelect, #znoLabel, #znoSelect{
+        display: none;
+    }
+  </style></head>
+<body>
+    
+    
+    <label for="role">भूमिका चुनें:</label>
+  <select id="roleSelect">
+    <option value="" disabled selected>अपनी भूमिका चुनें</option>
+    <option value="1">1. पोलिंग पार्टी</option>
+    <option value="2">2. सेक्टर मजिस्ट्रेट</option>
+    <option value="3">3. ज़ोनल मजिस्ट्रेट</option>
+  </select> 
+
+  <label id="acLabel" for="AC">विधानसभा क्षेत्र का चयन करें:</label>
+  <select id="acSelect">
+    <option value="" disabled selected>विधानसभा क्षेत्र का चयन करें</option>
+    <option value="1">384 पिण्ड्रा</option>
+    <option value="2">385 अजगरा</option>
+    <option value="3">386 शिवपुर</option>
+    <option value="4">387 रोहनियां</option>
+    <option value="5">388 वाराणसी (उत्तरी)</option>
+    <option value="6">389 वाराणसी (दक्षिणी)</option>
+    <option value="7">390 वाराणसी (कैंट)</option>
+    <option value="8">391 सेवापुरी</option>
+  </select>
+    
+  
+  <label id="psLabel" for="psSelect">मतदान केंद्र का चयन करें:</label>
+  <select id="psSelect">
+      <option value="" disabled selected>मतदान केंद्र का चयन करें</option>
+      
+    </select>
+
+    <label id="snoLabel" for="snoSelect">सेक्टर नंबर चुनें:</label>
+    <select id="snoSelect">      
+    </select>
+
+    <label id="znoLabel" for="znoSelect">ज़ोन नंबर चुनें:</label>
+    <select id="znoSelect">      
+    </select>
+
+    <div id="cnfbtn" class="confirm-message">
+     <p>यदि चयनित विवरण सही हैं तो ही 'पुष्टि करें' दबाएँ, अन्यथा पुनः चयन करने के लिए पृष्ठ को ताज़ा (Refresh) करें</p>
+     <button id="confirmButton">पुष्टि करें</button>
+   </div>
+
+   <div id="strbtn" class="confirm-message">
+     <p>ट्रैकिंग शुरू करने के लिए 'स्टार्ट ट्रैकिंग' दबाएँ:</p>
+     <button id="startButton">स्टार्ट ट्रैकिंग</button>
+     <p class="message" id="statusMessage"></p>
+   </div>
+
+    
+   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        document.getElementById("acSelect").addEventListener('change', function() {
+
+          var acNum = this.value;
+          var acNumber = Number(acNum); 
+          var newNumber = acNumber + 383; 
+          var newAc = newNumber.toString();
+          var fetchlink = "ac" + newAc + "ps";
+          
+          fetch(fetchlink)
+          .then(response => response.json())
+          .then(data => {
+
+            var psSelect = document.getElementById('psSelect');
+
+            data.forEach(location => {
+              
+              var psOption = document.createElement('option');
+              psOption.value = location.numPS;
+              psOption.setAttribute('data-latPS', location.latPS);
+              psOption.setAttribute('data-longPS', location.longPS);
+              psOption.textContent = location.numPS + " - " + location.namePSh;
+              psSelect.appendChild(psOption);
+              
+            });
+          })
+          .catch(error => console.error('Error:', error));
+          
+        });  
+
+
+        const sno = [34,36,25,30,29,19,27,22];
+        const zno = [3,3,4,4,4,2,4,4];
+
+        document.getElementById("acSelect").addEventListener('change', function() {
+            var select = document.getElementById("snoSelect");
+            select.innerHTML = ""; // clearing the previous options
+    
+            var acno = this.value; // getting the selected value
+
+            var defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.text = "सेक्टर नंबर चुनें";
+            select.appendChild(defaultOption);
+            
+            // running the loop based on the selected value
+            for (var i = 1; i <= sno[acno-1]; i++) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = "सेक्टर नंबर " + i;
+                select.appendChild(opt);
+            }
+        });        
+
+        document.getElementById("acSelect").addEventListener('change', function() {
+            var select = document.getElementById("znoSelect");
+            select.innerHTML = ""; // clearing the previous options
+    
+            var acno = this.value; // getting the selected value
+
+            var defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.text = "ज़ोन नंबर चुनें";
+            select.appendChild(defaultOption);
+            
+            // running the loop based on the selected value
+            for (var i = 1; i <= zno[acno-1]; i++) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = "ज़ोन नंबर " + i;
+                select.appendChild(opt);
+            }
+        });
+
+        
+
+        const psSelect = document.getElementById("psSelect");  
+        const startButton = document.getElementById("startButton");
+        const statusMessage = document.getElementById("statusMessage");
+
+        document.getElementById('roleSelect').addEventListener('change', function() {
+            document.getElementById('acLabel').style.display = 'block';
+            document.getElementById('acSelect').style.display = 'block';
+            });
+
+        document.getElementById('acSelect').addEventListener('change', function() {
+            if (document.getElementById('roleSelect').value == 1) {
+                document.getElementById('psLabel').style.display = 'block';
+                document.getElementById('psSelect').style.display = 'block';
+            }
+            else if (document.getElementById('roleSelect').value == 2) {
+                document.getElementById('snoLabel').style.display = 'block';
+                document.getElementById('snoSelect').style.display = 'block';
+            }
+            else{
+                document.getElementById('znoLabel').style.display = 'block';
+                document.getElementById('znoSelect').style.display = 'block';
+            }
+            });
+
+        document.getElementById('psSelect').addEventListener('change', function() {
+            document.getElementById('cnfbtn').style.display = 'block';
+            document.getElementById('confirmButton').style.display = 'block';
+            });
+        
+        document.getElementById('snoSelect').addEventListener('change', function() {
+            document.getElementById('cnfbtn').style.display = 'block';
+            document.getElementById('confirmButton').style.display = 'block';
+            });
+
+        document.getElementById('znoSelect').addEventListener('change', function() {
+            document.getElementById('cnfbtn').style.display = 'block';
+            document.getElementById('confirmButton').style.display = 'block';
+            });
+
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            document.getElementById('cnfbtn').style.display = 'none';
+            document.getElementById('confirmButton').style.display = 'none';
+            document.getElementById('strbtn').style.display = 'block';
+            document.getElementById('startButton').style.display = 'block';
+            });
+
+      startButton.addEventListener("click", function() {
+        statusMessage.textContent = "ऊपर दिखाई दे रहे 'Allow' बटन पर टैप करें| चुनाव दल आपके स्थान पर नज़र रख रहा है, वेबपेज बंद न करें!";
+        scheduleNextLocationUpdate(); // Send location every 5 minute
+        startButton.style.display = 'none';
+      });
+
+      //recursive function to send location every 5 minutes
+      function scheduleNextLocationUpdate() {
+        sendLocation();
+        setTimeout(scheduleNextLocationUpdate, 300000); // Schedule next location update in 5 minutes
+      }
+
+      function sendLocation() {
+        const roleValue = roleSelect.value;
+        const acValue = acSelect.value;
+        const psValue = psSelect.value;
+        const snoValue = snoSelect.value;
+        const znoValue = znoSelect.value;
+        const selectedOption = document.getElementById('psSelect').selectedOptions[0];
+        const latPS = parseFloat(selectedOption.getAttribute('data-latPS'));
+        const longPS = parseFloat(selectedOption.getAttribute('data-longPS'));
+
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            
+            const locationData = {
+              roleValue: roleValue,
+              acValue: acValue,
+              psValue: psValue,
+              snoValue: snoValue,
+              znoValue: znoValue,
+              current_location: {
+                type: "Point",
+                coordinates: [latitude, longitude]
+              },
+              ps_location: {
+                type: "Point",
+                coordinates: [latPS, longPS]
+              }
+            };
+            console.log(locationData);
+            sendToServer(locationData);
+          }, showError);
+        } else {
+          alert("Geolocation is not supported by this browser.");
+        }
+      }
+
+      function sendToServer(locationData) {
+        fetch("/updateValues", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(locationData)
+        })
+        .then(response => {
+          console.log("Location data sent successfully.");
+        })
+        .catch(error => {
+          console.error("Error sending location data:", error);
+        });
+      }
+
+      function showError(error) {
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            alert("User denied the request for Geolocation.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert("Location information is unavailable.");
+            break;
+          case error.TIMEOUT:
+            alert("The request to get user location timed out.");
+            break;
+          case error.UNKNOWN_ERROR:
+            alert("An unknown error occurred.");
+            break;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
